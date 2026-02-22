@@ -65,6 +65,11 @@ const activitySchema = new Schema({
     myBoughtSize: { type: Number, required: false }, // Tracks actual tokens we bought
 });
 
+// Indexes for fast trade lookups
+activitySchema.index({ transactionHash: 1 });
+activitySchema.index({ type: 1, bot: 1, botExcutedTime: 1 });
+positionSchema.index({ asset: 1, conditionId: 1 });
+
 const getUserPositionModel = (walletAddress: string) => {
     const collectionName = `user_positions_${walletAddress}`;
     return mongoose.model(collectionName, positionSchema, collectionName);

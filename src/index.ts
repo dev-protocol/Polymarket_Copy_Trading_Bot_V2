@@ -63,17 +63,6 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 export const main = async () => {
     try {
-        // Welcome message for first-time users
-        const colors = {
-            reset: '\x1b[0m',
-            yellow: '\x1b[33m',
-            cyan: '\x1b[36m',
-        };
-        
-        console.log(`\n${colors.yellow}💡 First time running the bot?${colors.reset}`);
-        console.log(`   Read the guide: ${colors.cyan}GETTING_STARTED.md${colors.reset}`);
-        console.log(`   Run health check: ${colors.cyan}npm run health-check${colors.reset}\n`);
-        
         await connectDB();
         Logger.startup(USER_ADDRESSES, PROXY_WALLET);
 

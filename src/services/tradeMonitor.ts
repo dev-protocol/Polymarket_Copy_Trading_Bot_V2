@@ -105,35 +105,27 @@ const init = async () => {
     Logger.tradersPositions(USER_ADDRESSES, positionCounts, positionDetails, profitabilities);
 };
 
-const fetchTradeData = async () => {
-    for (const { address, UserActivity, UserPosition } of userModels) {
-        try {
-            // Fetch trade activities from Polymarket API
-            const apiUrl = `https://data-api.polymarket.com/activity?user=${address}&type=TRADE`;
-            const activities = await fetchData(apiUrl);
+const fetchUserData = async (
+    address: string,
+    UserActivity: ReturnType<typeof getUserActivityModel>,
+    UserPosition: ReturnType<typeof getUserPositionModel>
+) => {
+    try {
+        const [activities, positions] = await Promise.all([
+            fetchData(`https://data-api.polymarket.com/activity?user=${address}&type=TRADE`),
+            fetchData(`https://data-api.polymarket.com/positions?user=${address}`),
+        ]);
 
-            if (!Array.isArray(activities) || activities.length === 0) {
-                continue;
-            }
-
-            // Process each activity
+        if (Array.isArray(activities) && activities.length > 0) {
             for (const activity of activities) {
-                // Skip if too old
-                if (activity.timestamp < TOO_OLD_TIMESTAMP) {
-                    continue;
-                }
+                if (activity.timestamp < TOO_OLD_TIMESTAMP) continue;
 
-                // Check if this trade already exists in database
-                const existingActivity = await UserActivity.findOne({
+                const existing = await UserActivity.findOne({
                     transactionHash: activity.transactionHash,
                 }).exec();
+                if (existing) continue;
 
-                if (existingActivity) {
-                    continue; // Already processed this trade
-                }
-
-                // Save new trade to database
-                const newActivity = new UserActivity({
+                await new UserActivity({
                     proxyWallet: activity.proxyWallet,
                     timestamp: activity.timestamp,
                     conditionId: activity.conditionId,
@@ -157,20 +149,15 @@ const fetchTradeData = async () => {
                     profileImageOptimized: activity.profileImageOptimized,
                     bot: false,
                     botExcutedTime: 0,
-                });
-
-                await newActivity.save();
+                }).save();
                 Logger.info(`New trade detected for ${address.slice(0, 6)}...${address.slice(-4)}`);
             }
+        }
 
-            // Also fetch and update positions
-            const positionsUrl = `https://data-api.polymarket.com/positions?user=${address}`;
-            const positions = await fetchData(positionsUrl);
-
-            if (Array.isArray(positions) && positions.length > 0) {
-                for (const position of positions) {
-                    // Update or create position
-                    await UserPosition.findOneAndUpdate(
+        if (Array.isArray(positions) && positions.length > 0) {
+            await Promise.all(
+                positions.map((position: Record<string, unknown>) =>
+                    UserPosition.findOneAndUpdate(
                         { asset: position.asset, conditionId: position.conditionId },
                         {
                             proxyWallet: position.proxyWallet,
@@ -200,15 +187,23 @@ const fetchTradeData = async () => {
                             negativeRisk: position.negativeRisk,
                         },
                         { upsert: true }
-                    );
-                }
-            }
-        } catch (error) {
-            Logger.error(
-                `Error fetching data for ${address.slice(0, 6)}...${address.slice(-4)}: ${error}`
+                    )
+                )
             );
         }
+    } catch (error) {
+        Logger.error(
+            `Error fetching data for ${address.slice(0, 6)}...${address.slice(-4)}: ${error}`
+        );
     }
+};
+
+const fetchTradeData = async () => {
+    await Promise.all(
+        userModels.map(({ address, UserActivity, UserPosition }) =>
+            fetchUserData(address, UserActivity, UserPosition)
+        )
+    );
 };
 
 // Track if this is the first run

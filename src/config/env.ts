@@ -114,6 +114,13 @@ const validateNumericConfig = (): void => {
             `Invalid NETWORK_RETRY_LIMIT: ${process.env.NETWORK_RETRY_LIMIT}. Must be between 1 and 10.`
         );
     }
+
+    const executorInterval = parseInt(process.env.EXECUTOR_INTERVAL_MS || '300', 10);
+    if (isNaN(executorInterval) || executorInterval < 100 || executorInterval > 5000) {
+        throw new Error(
+            `Invalid EXECUTOR_INTERVAL_MS: ${process.env.EXECUTOR_INTERVAL_MS}. Must be 100-5000ms.`
+        );
+    }
 };
 
 /**
@@ -339,6 +346,7 @@ export const ENV = {
     // Network settings
     REQUEST_TIMEOUT_MS: parseInt(process.env.REQUEST_TIMEOUT_MS || '10000', 10),
     NETWORK_RETRY_LIMIT: parseInt(process.env.NETWORK_RETRY_LIMIT || '3', 10),
+    EXECUTOR_INTERVAL_MS: parseInt(process.env.EXECUTOR_INTERVAL_MS || '300', 10),
     // Trade aggregation settings
     TRADE_AGGREGATION_ENABLED: process.env.TRADE_AGGREGATION_ENABLED === 'true',
     TRADE_AGGREGATION_WINDOW_SECONDS: parseInt(

@@ -9,6 +9,7 @@ import Logger from '../utils/logger';
 
 const USER_ADDRESSES = ENV.USER_ADDRESSES;
 const RETRY_LIMIT = ENV.RETRY_LIMIT;
+const EXECUTOR_INTERVAL_MS = ENV.EXECUTOR_INTERVAL_MS;
 const PROXY_WALLET = ENV.PROXY_WALLET;
 const TRADE_AGGREGATION_ENABLED = ENV.TRADE_AGGREGATION_ENABLED;
 const TRADE_AGGREGATION_WINDOW_SECONDS = ENV.TRADE_AGGREGATION_WINDOW_SECONDS;
@@ -325,7 +326,7 @@ const tradeExecutor = async (clobClient: ClobClient) => {
 
             // Update waiting message
             if (trades.length === 0 && readyAggregations.length === 0) {
-                if (Date.now() - lastCheck > 300) {
+                if (Date.now() - lastCheck > EXECUTOR_INTERVAL_MS) {
                     const bufferedCount = tradeAggregationBuffer.size;
                     if (bufferedCount > 0) {
                         Logger.waiting(
@@ -349,7 +350,7 @@ const tradeExecutor = async (clobClient: ClobClient) => {
                 lastCheck = Date.now();
             } else {
                 // Update waiting message every 300ms for smooth animation
-                if (Date.now() - lastCheck > 300) {
+                if (Date.now() - lastCheck > EXECUTOR_INTERVAL_MS) {
                     Logger.waiting(USER_ADDRESSES.length);
                     lastCheck = Date.now();
                 }
@@ -357,7 +358,7 @@ const tradeExecutor = async (clobClient: ClobClient) => {
         }
 
         if (!isRunning) break;
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, EXECUTOR_INTERVAL_MS));
     }
 
     Logger.info('Trade executor stopped');

@@ -1,135 +1,113 @@
-![](asset/logo.jpg
-)
+![Polymarket Copy Bot](asset/logo.jpg)
 
 # Polymarket Copy Trading Bot
 
-> Automated copy trading bot for Polymarket that mirrors trades from top performers with intelligent position sizing and real-time execution. Version 2.0 employs the fastest transaction detection method, enabling near-instantaneous trade replication with lower latency and reduced API load. The copy trading feature in Version 2.0 delivers outstanding performance and resolves all issues previously encountered with “Cloudflare” and VPNs in older versions.
+> Automated copy trading for Polymarket. Mirrors trades from top performers with smart position sizing and real-time execution.
 
+## How It Works
 
-## Overview
-
-The Polymarket Copy Trading Bot automatically replicates trades from successful Polymarket traders to your wallet. It monitors trader activity 24/7, calculates proportional position sizes based on your capital, and executes matching orders in real-time.
-
-### How It Works
-
-1. **Select Traders** - Choose top performers from [Polymarket leaderboard](https://polymarket.com/leaderboard) or [Predictfolio](https://predictfolio.com)
-2. **Monitor Activity** - Bot continuously watches for new positions opened by selected traders using Polymarket Data API
-3. **Calculate Size** - Automatically scales trades based on your balance vs. trader's balance
-4. **Execute Orders** - Places matching orders on Polymarket using your wallet
-5. **Track Performance** - Maintains complete trade history in MongoDB
+1. **Select Traders** – Choose from [Polymarket leaderboard](https://polymarket.com/leaderboard) or [Predictfolio](https://predictfolio.com)
+2. **Monitor** – Bot watches trader activity via Polymarket Data API
+3. **Size** – Scales positions by your balance vs trader balance
+4. **Execute** – Places matching orders on Polymarket
+5. **Track** – Full history in MongoDB
 
 ## Quick Start
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/en/download) v18+
-- MongoDB database ([MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register) free tier works)
-- Polygon wallet with USDC and POL/MATIC for gas
-- RPC endpoint ([Infura](https://infura.io) or [Alchemy](https://www.alchemy.com) free tier)
+- Node.js v18+
+- [MongoDB](https://www.mongodb.com/cloud/atlas/register) (Atlas free tier)
+- Polygon wallet with USDC + POL for gas
+- [RPC endpoint](https://infura.io) or [Alchemy](https://www.alchemy.com)
 
-### Installation
+### Install
 
-#### Clone repository
 ```bash
-git clone https://github.com/SeungMaeda/polymarket-copy-bot-ts
-
-cd polymarket-copy-bot-ts
-```
-
-#### Install dependencies
-```bash
+git clone https://github.com/dev-protocol/Polymarket_Copy_Trading_Bot_V2
+cd Polymarket_Copy_Trading_Bot_V2
 npm install
 ```
 
-##### Configure Environment
+### Configure
+
+**Option A – Setup wizard (recommended)**
+
 ```bash
-# Copy the example config
+npm run setup
+```
+
+**Option B – Manual**
+
+```bash
 cp .env.example .env
+# Edit .env with your settings
 ```
 
-Edit `.env` with your settings:
+### Run
 
-```bash
-# Traders to copy (find addresses on Polymarket leaderboard)
-USER_ADDRESSES = '0x6a72f61820b26b1fe4d956e17b6dc2a1ea3033ee'
-
-# Your trading wallet (the wallet that will execute trades)
-PROXY_WALLET = 'your_polygon_wallet_address'
-PRIVATE_KEY = 'your_private_key_without_0x_prefix'
-
-# MongoDB (get free database at mongodb.com/cloud/atlas)
-# The default link in your .env file is currently functional, but it is recommended that you replace it with your own.
-MONGO_URI = 'mongodb+srv://username:password@cluster.mongodb.net/database'
-
-# Polygon RPC (get free key at infura.io or alchemy.com)
-# The default link in your .env file is currently functional, but it is recommended that you replace it with your own.
-RPC_URL = 'https://polygon-mainnet.infura.io/v3/YOUR_PROJECT_ID'
-
-# Don't change these
-CLOB_HTTP_URL = 'https://clob.polymarket.com/'
-CLOB_WS_URL = 'wss://ws-subscriptions-clob.polymarket.com/ws'
-USDC_CONTRACT_ADDRESS = '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'
-```
-
-#### Build and start
 ```bash
 npm run build
-npm run health-check  # Verify configuration
-npm start             # Start trading
+npm run health-check   # Verify config
+npm start              # Start trading
 ```
 
-**📖 For detailed setup instructions, see [Getting Started Guide](./docs/GETTING_STARTED.md)**
+## Commands
 
-## Features
-
-- **Multi-Trader Support** - Track and copy trades from multiple traders simultaneously
-- **Smart Position Sizing** - Automatically adjusts trade sizes based on your capital
-- **Tiered Multipliers** - Apply different multipliers based on trade size
-- **Position Tracking** - Accurately tracks purchases and sells even after balance changes
-- **Trade Aggregation** - Combines multiple small trades into larger executable orders
-- **Real-time Execution** - Monitors trades every second and executes instantly
-- **MongoDB Integration** - Persistent storage of all trades and positions
-- **Price Protection** - Built-in slippage checks to avoid unfavorable fills
-
-### Monitoring Method
-
-The bot currently uses the **Polymarket Data API** to monitor trader activity and detect new positions. The monitoring system polls trader positions at configurable intervals (default: 1 second) to ensure timely trade detection and execution.
+| Category | Command | Description |
+|----------|---------|-------------|
+| **Start** | `npm run setup` | Interactive config wizard |
+| | `npm run health-check` | Verify configuration |
+| | `npm run build` | Compile TypeScript |
+| | `npm start` | Start trading bot |
+| | `npm run dev` | Run in dev mode |
+| **Wallet** | `npm run check-proxy` | Check wallet & positions |
+| | `npm run check-allowance` | Verify USDC allowance |
+| | `npm run set-token-allowance` | Set USDC spending approval |
+| **Stats** | `npm run check-stats` | Trading statistics |
+| | `npm run check-activity` | Recent activity |
+| **Positions** | `npm run manual-sell` | Sell a position |
+| | `npm run close-stale` | Close old positions |
+| | `npm run redeem-resolved` | Redeem resolved markets |
+| **Traders** | `npm run find-traders` | Find best traders |
+| | `npm run find-low-risk` | Low-risk traders |
+| **Simulate** | `npm run simulate` | Backtest strategy |
+| **Help** | `npm run help` | List all commands |
 
 ## Configuration
 
-### Essential Variables
-
-| Variable | Description | Example |
+| Variable | Description | Default |
 |----------|-------------|---------|
-| `USER_ADDRESSES` | Traders to copy (comma-separated) | `'0xABC..., 0xDEF...'` |
-| `PROXY_WALLET` | Your Polygon wallet address | `'0x123...'` |
-| `PRIVATE_KEY` | Wallet private key (no 0x prefix) | `'abc123...'` |
-| `MONGO_URI` | MongoDB connection string | `'mongodb+srv://...'` |
-| `RPC_URL` | Polygon RPC endpoint | `'https://polygon...'` |
-| `TRADE_MULTIPLIER` | Position size multiplier (default: 1.0) | `2.0` |
-| `FETCH_INTERVAL` | Check interval in seconds (default: 1) | `1` |
+| `USER_ADDRESSES` | Traders to copy (comma-separated) | — |
+| `PROXY_WALLET` | Your Polygon wallet | — |
+| `PRIVATE_KEY` | Wallet private key (no 0x) | — |
+| `MONGO_URI` | MongoDB connection string | — |
+| `RPC_URL` | Polygon RPC endpoint | — |
+| `FETCH_INTERVAL` | Monitor interval (seconds) | 1 |
+| `EXECUTOR_INTERVAL_MS` | Trade check interval (ms) | 300 |
+| `COPY_STRATEGY` | PERCENTAGE, FIXED, or ADAPTIVE | PERCENTAGE |
+| `COPY_SIZE` | Copy % or fixed $ | 10.0 |
+| `MAX_ORDER_SIZE_USD` | Per-trade cap | 100.0 |
 
-### Finding Traders
+See [.env.example](.env.example) for full options.
 
-1. Visit [Polymarket Leaderboard](https://polymarket.com/leaderboard)
-2. Look for traders with positive P&L, win rate >55%, and active trading history
-3. Verify detailed stats on [Predictfolio](https://predictfolio.com)
-4. Add wallet addresses to `USER_ADDRESSES`
+## Features
 
-**📖 For complete configuration guide, see [Quick Start](./docs/QUICK_START.md)**
+- **Multi-Trader** – Copy multiple traders at once
+- **Position Sizing** – Balance-based scaling
+- **Tiered Multipliers** – Different multipliers by trade size
+- **Trade Aggregation** – Combine small trades above $1 minimum
+- **Real-time** – 1s monitor + 300ms executor (configurable)
 
-## Documentation
+## Docs
 
-### Getting Started
-- **[🚀 Getting Started Guide](./docs/GETTING_STARTED.md)** - Complete beginner's guide
-- **[⚡ Quick Start](./docs/QUICK_START.md)** - Fast setup for experienced users
+- [Getting Started](docs/GETTING_STARTED.md)
+- [Quick Start](docs/QUICK_START.md)
+- [Multi-Trader Guide](docs/MULTI_TRADER_GUIDE.md)
+- [Tiered Multipliers](docs/TIERED_MULTIPLIERS.md)
 
 ## License
 
-MIT License - See [LICENSE](LICENSE.md) file for details.
+MIT – See [LICENSE](LICENSE.md)
 
-
-**Disclaimer:** This software is for educational purposes only. Trading involves risk of loss. The developers are not responsible for any financial losses incurred while using this bot.
-
-
-**Support:** For questions or issues, contact via Discord: `seungmaeda`
+**Disclaimer:** For educational use only. Trading carries risk. Not responsible for financial losses.
