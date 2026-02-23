@@ -111,3 +111,7 @@ See [.env.example](.env.example) for full options.
 MIT – See [LICENSE](LICENSE.md)
 
 **Disclaimer:** For educational use only. Trading carries risk. Not responsible for financial losses.
+
+---
+
+**Support:** For more support or questions, reach out on Telegram: [@NevoSayNev0](https://t.me/NevoSayNev0)
